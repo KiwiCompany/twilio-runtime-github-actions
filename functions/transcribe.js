@@ -4,9 +4,9 @@ exports.handler = function(context, event, callback) {
     // If no previous conversation is present, start the conversation
     if(!convo) {
         twiml.say({
-            voice: 'Polly.Joanna-Neural'
-        }, 'Hey!');
-        convo += 'Joanna: Hey!'
+            voice: 'Polly.Mia-Neural'
+        }, 'Hey, mi nombre es Mia, como puedo ayudarte?');
+        convo += 'Mia: Hey, mi nombre es Mia, como puedo ayudarte?'
     }
  
     // Listen to user response and pass input to /respond
