@@ -3,7 +3,7 @@ const { OpenAI } = require("openai");
 
 exports.handler = async function(context, event, callback) {
    // Initialize TwiMl and OpenAI
-   const openai = new OpenAI({ api_key: 'API_KEY'});
+   const openai = new OpenAI({ api_key: context.OPEN_AI_API_KEY});
    const twiml = new Twilio.twiml.VoiceResponse();
 
    // Grab previous conversations and the users voice input from the request
@@ -26,7 +26,7 @@ exports.handler = async function(context, event, callback) {
 
    return callback(null, twiml);
 
-   
+
    async function generateAIResponse(convo) {
        const apiResponse = await openai.completions.create({
            model: "text-curie-001",
