@@ -28,7 +28,7 @@ jobs:
         run: npm ci
       - name: Create env file
         env:
-          OPENAI_API_KEY: asd
+          OPENAI_API_KEY: rty
         run: |
           echo "OPENAI_API_KEY=$OPENAI_API_KEY" >> .env
       - name: Install twilio cli and run deploy command
