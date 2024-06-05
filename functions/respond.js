@@ -15,7 +15,7 @@ exports.handler = async function(context, event, callback) {
    const aiResponse = await generateAIResponse(convo);
    convo += aiResponse;
    const say = twiml.say({
-       voice: 'Polly.Joanna-Neural'
+       voice: 'Polly.Mia-Neural'
    }, aiResponse);
 
    //Pass new convo back to /listen
@@ -32,7 +32,7 @@ exports.handler = async function(context, event, callback) {
            model: "text-curie-001",
            prompt: presetPrompt + convo,
            max_tokens: 60,
-           temperature: 0.8,
+           temperature: 0.1,
            stop: ['\n', '\n\n'],
        })
        console.log(apiResponse);
