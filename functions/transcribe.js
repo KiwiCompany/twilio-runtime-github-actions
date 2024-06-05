@@ -1,8 +1,8 @@
 exports.handler = function(context, event, callback) {
     const twiml = new Twilio.twiml.VoiceResponse();
-    let convo = event.convo || '';
+    let thread_id = event.thread_id || '';
     // If no previous conversation is present, start the conversation
-    if(!convo) {
+    if(!thread_id) {
         twiml.say({
             voice: 'Polly.Mia-Neural'
         }, 'Hey, mi nombre es Mia, como puedo ayudarte?');
