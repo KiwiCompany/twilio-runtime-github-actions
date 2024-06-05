@@ -26,6 +26,7 @@ exports.handler = async function(context, event, callback) {
 
    return callback(null, twiml);
 
+   
 
    async function generateAIResponse(convo) {
        const apiResponse = await openai.completions.create({
