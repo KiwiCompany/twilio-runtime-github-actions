@@ -32,4 +32,4 @@ jobs:
          TWILIO_API_KEY: ${{ secrets.TWILIO_API_KEY }}
          TWILIO_API_SECRET: ${{secrets.TWILIO_API_SECRET}}
         # Install the Twilio CLI and the serverless plugin then deploy the function
-        run: npm install twilio-cli -g && twilio plugins:install @twilio-labs/plugin-serverless && twilio serverless:deploy --service-name=AI-Friend-Call --environment=dev --force
+        run: npm install twilio-cli -g && twilio plugins:install @twilio-labs/plugin-serverless && twilio api:serverless:v1:services:remove --sid ZS3358079bdcb89a4712968bf1c33200dc --environment=dev --force && twilio serverless:deploy --service-name=AI-Friend-Call --environment=dev --force
