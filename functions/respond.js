@@ -9,10 +9,11 @@ exports.handler = async function(context, event, callback) {
    // Grab previous conversations and the users voice input from the request
    let convo = event.convo;
    const voiceInput = event.SpeechResult;
-
+    console.log(voiceInput);
    //Format input for GPT-3 and voice the response
-   convo += `\nYou: ${voiceInput}\nJoanna:`;
+   convo += `\nYou: ${voiceInput}\nMia:`;
    const aiResponse = await generateAIResponse(convo);
+   console.log(aiResponse);
    convo += aiResponse;
    const say = twiml.say({
        voice: 'Polly.Mia-Neural'
