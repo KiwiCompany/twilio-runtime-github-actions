@@ -7,19 +7,18 @@ exports.handler = async function(context, event, callback) {
 
     //Here starts, when new call it will set thread as empty, but later it will receive from respond so the convo will continue
     let thread_id = event.thread_id || ''; 
-
     if(!thread_id) {
         //Create a new thread to talk with the AI
-        const thread = await openai.beta.threads.create();
-        thread = client.beta.threads.create(
-            messages=[
+         const thread = await openai.beta.threads.create({
+            messages: [
                 {
                     "role": "assistant",
                     "content": firstInteract
                 }
             ]
-        )
+        })
         thread_id = thread.id;
+        console.log(thread_id);
         //The assistant will say something to generate a convo
         twiml.say({
             voice: 'Polly.Mia-Neural'

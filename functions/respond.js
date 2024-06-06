@@ -5,7 +5,7 @@ const assistant_id = 'asst_hOyzWztfT0yX30pUkB3LHCYQ'
 
 
 exports.handler = async function(context, event, callback) {
-
+    console.log('ssss');
     const openai = new OpenAI({ api_key: context.OPENAI_API_KEY});
     const twiml = new Twilio.twiml.VoiceResponse();
     //Receive the thread ID from transcribe
