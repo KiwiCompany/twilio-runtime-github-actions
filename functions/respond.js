@@ -5,11 +5,14 @@ const assistant_id = 'asst_hOyzWztfT0yX30pUkB3LHCYQ'
 
 
 exports.handler = async function(context, event, callback) {
-    console.log('ssss');
     const openai = new OpenAI({ api_key: context.OPENAI_API_KEY});
     const twiml = new Twilio.twiml.VoiceResponse();
     //Receive the thread ID from transcribe
     let thread_id = event.thread_id
+    // if(!thread_id){
+    //     let _thread = await openai.beta.threads.create();
+    //     thread_id = _thread.thread_id
+    // }
     //Receive the transcribed request from the user
     let voiceInput = event.SpeechResult;
     //Call the function to interact with AI and get the response from assistant
@@ -45,7 +48,6 @@ exports.handler = async function(context, event, callback) {
                 assistant_id
             }
         );
-        console.log(run);
         //Get the latest messages, get the last one and return in order to make Twilio sppeech it to user
         if (run.status == 'completed') {
             const messages = await openai.beta.threads.messages.list(thread_id);

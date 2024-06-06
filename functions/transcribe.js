@@ -18,7 +18,6 @@ exports.handler = async function(context, event, callback) {
             ]
         })
         thread_id = thread.id;
-        console.log(thread_id);
         //The assistant will say something to generate a convo
         twiml.say({
             voice: 'Polly.Mia-Neural'
