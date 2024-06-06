@@ -6,64 +6,47 @@ const assistant_id = 'asst_hOyzWztfT0yX30pUkB3LHCYQ'
 
 exports.handler = async function(context, event, callback) {
 
-    // Initialize TwiMl and OpenAI
     const openai = new OpenAI({ api_key: context.OPENAI_API_KEY});
     const twiml = new Twilio.twiml.VoiceResponse();
-    
-    // Grab previous conversations and the users voice input from the request
-    let convo = event.convo;
-    const voiceInput = event.SpeechResult;
-    
-    //Format input for GPT-3 and voice the response
+    //Receive the thread ID from transcribe
+    let thread_id = event.thread_id
+    //Receive the transcribed request from the user
+    let voiceInput = event.SpeechResult;
+    //Call the function to interact with AI and get the response from assistant
     const { 
-        aiResponse, 
-        thread_id
-    } = await generateAIResponse(convo);
-    
+        aiResponse
+    } = await generateAIResponse(voiceInput);
+    //Make user listen the response
     const say = twiml.say({
         voice: 'Polly.Mia-Neural'
     }, aiResponse);
-
-    //Pass new convo back to /listen
+    //Put the thread ID in params to send to transcribe
     const params = new URLSearchParams({ thread_id: thread_id });
+    //Now transcribe will listen to user to get the next user request
     twiml.redirect({
         method: 'POST'
     }, `/transcribe?${params}`);
 
     return callback(null, twiml);
 
-    async function generateAIResponse(convo) {
-
-        let thread_id = null
-
-        if(!thread_id){
-            const thread = await openai.beta.threads.create({
-                messages: [
-                    {
-                        role: 'user',
-                        content: convo,
-                    },
-                ],
-            });
-        
-            thread_id = thread.id;
-        }
-
+    async function generateAIResponse(voiceInput) {
+        //Send the transcribed message to OPENAI and insert in the generated thread ID
         await openai.beta.threads.messages.create(
             thread_id,
             {  
-                role: "user",  // "user" for your message, "assistant" for responses
-                content: convo,
+                role: "user",  
+                content: voiceInput,
             }
         );
-
+        //Set the assistant to work with and process the last message in order to get an AI response
         let run = await openai.beta.threads.runs.createAndPoll(
             thread_id,
             { 
                 assistant_id
             }
         );
-
+        console.log(run);
+        //Get the latest messages, get the last one and return in order to make Twilio sppeech it to user
         if (run.status == 'completed') {
             const messages = await openai.beta.threads.messages.list(thread_id);
             return {
@@ -71,5 +54,6 @@ exports.handler = async function(context, event, callback) {
                 thread_id
             }
         }
+
     }
 };
