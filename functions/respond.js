@@ -23,9 +23,10 @@ exports.handler = async function(context, event, callback) {
     } = await generateAIResponse(voiceInput);
     console.log('ENDS GPT4 PROCESSING');
     //Make user listen the response
-    const say = twiml.say({
-        voice: 'Polly.Mia-Neural'
-    }, aiResponse);
+    // const say = twiml.say({
+    //     voice: 'Polly.Mia-Neural'
+    // }, aiResponse);
+    console.log(aiResponse);
     //Put the thread ID in params to send to transcribe
     const params = new URLSearchParams({ thread_id: thread_id });
     //Now transcribe will listen to user to get the next user request
