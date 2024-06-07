@@ -1,4 +1,7 @@
+const { OpenAI } = require("openai");
+
 exports.handler = async function (context, event, callback) {
+    const openai = new OpenAI({ api_key: context.OPENAI_API_KEY});
     const twiml = new Twilio.twiml.VoiceResponse();
     const firstInteract = 'Hola, mi nombre es Mia, como puedo ayudarte?'
 
