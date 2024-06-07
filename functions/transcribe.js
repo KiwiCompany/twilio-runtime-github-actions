@@ -6,6 +6,16 @@ exports.handler = async function(context, event, callback) {
     const firstInteract = 'Hola, mi nombre es Mia, como puedo ayudarte?'
     console.log('starts file');
     //Here starts, when new call it will set thread as empty, but later it will receive from respond so the convo will continue
+
+    twiml.append(new Twilio.twiml.Record({
+        // action: `/handle_recording`,  // URL to handle recorded audio
+        maxLength: 3600,              // Maximum recording duration (1 hour)
+        timeout: 1,                   // Silence timeout before ending recording (seconds)
+        trim: 'silence',              // Trim silence from the beginning and end (optional)
+        recordSid: event.CallSid,     // Include CallSid for easy association (optional)
+      }));
+
+      
     let thread_id = event.thread_id || ''; 
     if(!thread_id) {
         //Create a new thread to talk with the AI
@@ -25,10 +35,7 @@ exports.handler = async function(context, event, callback) {
     }
 
 
-    twiml.record({
-        maxLength: 60,              // Maximum recording duration (1 hour)
-        timeout: 1,                   // Silence timeout before ending recording (seconds)
-      });
+
     
       // Play a beep to signal recording start (optional)
 ;
