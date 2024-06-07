@@ -7,6 +7,7 @@ const assistant_id = 'asst_hOyzWztfT0yX30pUkB3LHCYQ'
 exports.handler = async function(context, event, callback) {
     const openai = new OpenAI({ api_key: context.OPENAI_API_KEY});
     const twiml = new Twilio.twiml.VoiceResponse();
+    console.log(thread_id);
     //Receive the thread ID from transcribe
     let thread_id = event.thread_id
     // if(!thread_id){
@@ -16,9 +17,11 @@ exports.handler = async function(context, event, callback) {
     //Receive the transcribed request from the user
     let voiceInput = event.SpeechResult;
     //Call the function to interact with AI and get the response from assistant
+    console.log(voiceInput);
     const { 
         aiResponse
     } = await generateAIResponse(voiceInput);
+    console.log(aiResponse);
     //Make user listen the response
     const say = twiml.say({
         voice: 'Polly.Mia-Neural'
