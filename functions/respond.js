@@ -9,7 +9,7 @@ exports.handler = async function(context, event, callback) {
     
     //Receive the thread ID from transcribe
     let thread_id = event.thread_id
-    console.log(thread_id);
+    console.log('STARTS respond function');
     // if(!thread_id){
     //     let _thread = await openai.beta.threads.create();
     //     thread_id = _thread.thread_id
@@ -17,11 +17,11 @@ exports.handler = async function(context, event, callback) {
     //Receive the transcribed request from the user
     let voiceInput = event.SpeechResult;
     //Call the function to interact with AI and get the response from assistant
-    console.log(voiceInput);
+    console.log('STARTS GPT4 PROCESSING');
     const { 
         aiResponse
     } = await generateAIResponse(voiceInput);
-    console.log(aiResponse);
+    console.log('ENDS GPT4 PROCESSING');
     //Make user listen the response
     const say = twiml.say({
         voice: 'Polly.Mia-Neural'
