@@ -1,5 +1,5 @@
 const { OpenAI } = require("openai");
-
+const fs = require('fs');
 const assistant_id = 'asst_hOyzWztfT0yX30pUkB3LHCYQ'
 
 
@@ -16,10 +16,11 @@ exports.handler = async function(context, event, callback) {
     // }
     //Receive the transcribed request from the user
 
-    let audio_file= open(event.RecordingUrl+".mp3", "rb")
+    let audio_file= fs.createReadStream(event.RecordingUrl+".mp3", "rb")
     let transcription = await openai.audio.transcriptions.create(
         model="whisper-1", 
-        file=audio_file
+        file=audio_file,
+        language='es'
     )
 
     console.log(transcription);
