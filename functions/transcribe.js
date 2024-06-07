@@ -20,10 +20,10 @@ exports.handler = async function (context, event, callback) {
             voice: 'Polly.Mia-Neural'
         }, firstInteract);
     }
-
+    const params = new URLSearchParams({ thread_id: thread_id });
     twiml.record({
-        action: `/respond`,
-        timeout: 2,
+        action: `/respond?${params}`,
+        timeout: 3,
         maxLength: 60,
     });
 
