@@ -27,14 +27,16 @@ exports.handler = async function(context, event, callback) {
     //Set the thread id as param to send in the url later
     const params = new URLSearchParams({ thread_id: thread_id });
     //Listen what person says and transcribe
+    console.log("start listening");
     twiml.gather({
         enhanced: "true",
-        speechTimeout: 1,
+        speechTimeout: 0.5,
         language: 'es-MX',
         speechModel: "phone_call",
         input: 'speech',
         action:`/respond?${params}`,
     })
+    console.log("end listening");
     //Send the transcription with thread ID to the other function
     return callback(null, twiml);
  };

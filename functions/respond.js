@@ -1,4 +1,3 @@
-const presetPrompt =`The following is a conversation with an AI friend named Joanna. Joanna is friendly, funny, creative, and very talkative.\n\n`;
 const { OpenAI } = require("openai");
 
 const assistant_id = 'asst_hOyzWztfT0yX30pUkB3LHCYQ'
