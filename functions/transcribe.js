@@ -22,8 +22,9 @@ exports.handler = async function (context, event, callback) {
     }
 
     twiml.record({
+        action: `/respond`,
         timeout: 2,
-        transcribe: true
+        maxLength: 60,
     });
 
     return callback(null, twiml);
