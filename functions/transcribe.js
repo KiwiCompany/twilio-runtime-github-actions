@@ -25,13 +25,10 @@ exports.handler = async function(context, event, callback) {
     }
 
 
-
-    const recording = new Twilio.twiml.Record({
-        action: `/handle_recording`,  // URL to handle recorded audio
-        maxLength: 3600,              // Maximum recording duration (1 hour)
-        timeout: 5,                   // Silence timeout before ending recording (seconds)
+    twiml.record({
+        maxLength: 60,              // Maximum recording duration (1 hour)
+        timeout: 1,                   // Silence timeout before ending recording (seconds)
       });
-      twiml.append(recording);
     
       // Play a beep to signal recording start (optional)
 ;
