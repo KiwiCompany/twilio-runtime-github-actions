@@ -29,6 +29,7 @@ exports.handler = async function(context, event, callback) {
     //Put the thread ID in params to send to transcribe
     const params = new URLSearchParams({ thread_id: thread_id });
     //Now transcribe will listen to user to get the next user request
+    console.log('finish file');
     twiml.redirect({
         method: 'POST'
     }, `/transcribe?${params}`);
