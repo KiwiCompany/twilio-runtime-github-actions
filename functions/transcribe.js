@@ -29,7 +29,8 @@ exports.handler = async function(context, event, callback) {
     //Listen what person says and transcribe
     twiml.gather({
         enhanced: "true",
-        speechTimeout: 'auto',
+        speechTimeout: 1.5,
+        language: 'es-MX',
         speechModel: "phone_call",
         input: 'speech',
         action:`/respond?${params}`,
