@@ -28,7 +28,7 @@ exports.handler = async function(context, event, callback) {
     const params = new URLSearchParams({ thread_id: thread_id });
     //Listen what person says and transcribe
     console.log("start listening");
-    twiml.gather({
+    let res = await twiml.gather({
         enhanced: "true",
         speechTimeout: 0.5,
         language: 'es-MX',
@@ -36,7 +36,9 @@ exports.handler = async function(context, event, callback) {
         input: 'speech',
         action:`/respond?${params}`,
     })
+    console.log(res);
     console.log("end listening");
+
     //Send the transcription with thread ID to the other function
-    return callback(null, twiml);
+    // return callback(null, twiml);
  };
