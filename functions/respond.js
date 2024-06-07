@@ -6,10 +6,9 @@ const assistant_id = 'asst_hOyzWztfT0yX30pUkB3LHCYQ'
 exports.handler = async function(context, event, callback) {
     const openai = new OpenAI({ api_key: context.OPENAI_API_KEY});
     const twiml = new Twilio.twiml.VoiceResponse();
-    
+    console.log(callback);
     //Receive the thread ID from transcribe
     let thread_id = event.thread_id
-    console.log('STARTS respond function');
     // if(!thread_id){
     //     let _thread = await openai.beta.threads.create();
     //     thread_id = _thread.thread_id
@@ -17,20 +16,16 @@ exports.handler = async function(context, event, callback) {
     //Receive the transcribed request from the user
     let voiceInput = event.SpeechResult;
     //Call the function to interact with AI and get the response from assistant
-    console.log('STARTS GPT4 PROCESSING');
     const { 
         aiResponse
     } = await generateAIResponse(voiceInput);
-    console.log('ENDS GPT4 PROCESSING');
     //Make user listen the response
-    // const say = twiml.say({
-    //     voice: 'Polly.Mia-Neural'
-    // }, aiResponse);
-    console.log(aiResponse);
+    const say = twiml.say({
+        voice: 'Polly.Mia-Neural'
+    }, aiResponse);
     //Put the thread ID in params to send to transcribe
     const params = new URLSearchParams({ thread_id: thread_id });
     //Now transcribe will listen to user to get the next user request
-    console.log('finish file');
     twiml.redirect({
         method: 'POST'
     }, `/transcribe?${params}`);

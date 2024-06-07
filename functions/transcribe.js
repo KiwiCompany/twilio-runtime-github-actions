@@ -23,17 +23,32 @@ exports.handler = async function(context, event, callback) {
             voice: 'Polly.Mia-Neural'
         }, firstInteract);
     }
-    //Set the thread id as param to send in the url later
-    const params = new URLSearchParams({ thread_id: thread_id });
-    //Listen what person says and transcribe
-    twiml.gather({
-        enhanced: "true",
-        speechTimeout: 0.5,
-        language: 'es-MX',
-        speechModel: "phone_call",
-        input: 'speech',
-        action:`/respond?${params}`,
-    })
-    //Send the transcription with thread ID to the other function
+
+
+
+    const recording = new Twilio.twiml.Record({
+        action: `/handle_recording`,  // URL to handle recorded audio
+        maxLength: 3600,              // Maximum recording duration (1 hour)
+        timeout: 5,                   // Silence timeout before ending recording (seconds)
+      });
+      twiml.append(recording);
+    
+      // Play a beep to signal recording start (optional)
+;
     return callback(null, twiml);
+
+
+
+    // const params = new URLSearchParams({ thread_id: thread_id });
+
+    // twiml.gather({
+    //     enhanced: "true",
+    //     speechTimeout: 0,
+    //     language: 'es-MX',
+    //     speechModel: "phone_call",
+    //     input: 'speech',
+    //     action:`/respond?${params}`,
+    // })
+
+    // return callback(null, twiml);
  };
