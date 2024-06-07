@@ -15,23 +15,32 @@ exports.handler = async function(context, event, callback) {
     //     thread_id = _thread.thread_id
     // }
     //Receive the transcribed request from the user
-    let voiceInput = event.SpeechResult;
-    //Call the function to interact with AI and get the response from assistant
-    const { 
-        aiResponse
-    } = await generateAIResponse(voiceInput);
-    //Make user listen the response
-    const say = twiml.say({
-        voice: 'Polly.Mia-Neural'
-    }, aiResponse);
-    //Put the thread ID in params to send to transcribe
-    const params = new URLSearchParams({ thread_id: thread_id });
-    //Now transcribe will listen to user to get the next user request
-    twiml.redirect({
-        method: 'POST'
-    }, `/transcribe?${params}`);
 
-    return callback(null, twiml);
+    let audio_file= open(event.RecordingUrl+".mp3", "rb")
+    let transcription = await openai.audio.transcriptions.create(
+        model="whisper-1", 
+        file=audio_file
+    )
+
+    console.log(transcription);
+
+    // let voiceInput = event.SpeechResult;
+
+    // const { 
+    //     aiResponse
+    // } = await generateAIResponse(voiceInput);
+
+    // const say = twiml.say({
+    //     voice: 'Polly.Mia-Neural'
+    // }, aiResponse);
+
+    // const params = new URLSearchParams({ thread_id: thread_id });
+
+    // twiml.redirect({
+    //     method: 'POST'
+    // }, `/transcribe?${params}`);
+
+    // return callback(null, twiml);
 
     async function generateAIResponse(voiceInput) {
         //Send the transcribed message to OPENAI and insert in the generated thread ID
