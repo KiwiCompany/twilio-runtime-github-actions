@@ -73,7 +73,7 @@ exports.handler = async function(context, event, callback) {
     // }
 
     async function generateAIResponses(voiceInput) {
-        const createMessagePromise = openai.beta.threads.messages.create(thread_id, {
+        openai.beta.threads.messages.create(thread_id, {
             role: "user",
             content: voiceInput
         });
@@ -89,7 +89,6 @@ exports.handler = async function(context, event, callback) {
                 reject(error); 
             })
             .on('end', async () => {
-                await createMessagePromise;
                 resolve(textChunks.join(''));
             });
         });
