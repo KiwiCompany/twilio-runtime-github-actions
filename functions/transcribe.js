@@ -21,13 +21,22 @@ exports.handler = async function (context, event, callback) {
         }, firstInteract);
     }
     const params = new URLSearchParams({ thread_id: thread_id });
-    console.log(thread_id);
-    twiml.record({
-        action: `/respond?${params}`,
-        timeout: 1,
-        maxLength: 60,
-        playBeep: false   
-    });
+  
+    // twiml.record({
+    //     action: `/respond?${params}`,
+    //     timeout: 1,
+    //     maxLength: 60,
+    //     playBeep: false   
+    // });
+
+    twiml.gather({
+        enhanced: "true",
+        speechTimeout: 0.5,
+        language: 'es-MX',
+        speechModel: "phone_call",
+        input: 'speech',
+        action:`/respond?${params}`,
+    })
 
     return callback(null, twiml);
 };
