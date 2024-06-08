@@ -73,25 +73,28 @@ exports.handler = async function(context, event, callback) {
     // }
 
     async function generateAIResponses(voiceInput) {
-        const createMessagePromise = openai.beta.threads.messages.create(thread_id, {
+        await openai.beta.threads.messages.create(thread_id, {
             role: "user",
             content: voiceInput
         });
         
-        const run = openai.beta.threads.runs.stream(thread_id, { assistant_id });
-        
         return new Promise((resolve, reject) => {
-            let textChunks = [];
+            const run = openai.beta.threads.runs.stream(thread_id, {
+                assistant_id
+            });
+        
+            let finalText = "";
+        
             run.on('textDelta', (textDelta) => {
-                textChunks.push(textDelta.value);
+                finalText += textDelta.value;
             })
             .on('error', (error) => {
                 reject(error); 
             })
-            .on('end', async () => {
-                await createMessagePromise;
-                resolve(textChunks.join(''));
+            .on('end', () => {
+                resolve(finalText);
             });
         });
     }
+
 };
