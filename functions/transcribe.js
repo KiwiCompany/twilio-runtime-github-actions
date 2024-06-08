@@ -21,10 +21,12 @@ exports.handler = async function (context, event, callback) {
         }, firstInteract);
     }
     const params = new URLSearchParams({ thread_id: thread_id });
+    console.log(thread_id);
     twiml.record({
         action: `/respond?${params}`,
-        timeout: 3,
+        timeout: 1,
         maxLength: 60,
+        playBeep: false   
     });
 
     return callback(null, twiml);
