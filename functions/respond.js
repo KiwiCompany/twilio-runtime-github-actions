@@ -8,8 +8,9 @@ exports.handler = async function(context, event, callback) {
     const openai = new OpenAI({ api_key: context.OPENAI_API_KEY});
     const twiml = new Twilio.twiml.VoiceResponse();
     const thread_id = event.thread_id
+    const ZOHO_API_KEY = event.ZOHO_API_KEY
     let aiResponse = await generateAIResponses(event.SpeechResult, openai);
-    const params = new URLSearchParams({ thread_id: thread_id });
+    const params = new URLSearchParams({ thread_id: thread_id, ZOHO_API_KEY });
     
 
     if(aiResponse.includes('code_100')){
