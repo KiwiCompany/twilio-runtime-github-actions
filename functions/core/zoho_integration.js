@@ -18,14 +18,14 @@ exports.getZohoApiKey = async(context) => {
     }
 }
 
-exports.getZohoAvailableAgents = async(ZOHO_API_KEY) => {
+exports.getZohoAvailableAgents = async(zoho_api_key) => {
 
     let config = {
         method: 'get',
         maxBodyLength: Infinity,
         url: 'https://www.zohoapis.com/crm/v5/users?type=ActiveUsers',
         headers: { 
-            'Authorization': 'Zoho-oauthtoken '+ZOHO_API_KEY
+            'Authorization': 'Zoho-oauthtoken '+zoho_api_key
         }
     };
 
@@ -38,3 +38,27 @@ exports.getZohoAvailableAgents = async(ZOHO_API_KEY) => {
     }
     
 }
+
+exports.getUserFromZoho = async(zoho_api_key, phone_number) => {
+    console.log(zoho_api_key);
+    console.log(phone_number);
+    let config = {
+        method: 'get',
+        maxBodyLength: Infinity,
+        url: `https://www.zohoapis.com/crm/v6/users/search?phone=${phone_number}`,
+        headers: { 
+          'Authorization': 'Zoho-oauthtoken '+zoho_api_key
+        }
+      };
+
+    try {
+        let response = await axios.request(config)
+        return response.data.users[0]
+    } catch (er) {
+        console.log(er);
+        return null
+    }
+    
+}
+
+
