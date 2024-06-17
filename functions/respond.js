@@ -31,7 +31,8 @@ exports.handler = async function(context, event, callback) {
         }, aiResponse.replace('code_100', ''));
         const transferTo = '+584125295840';
         twiml.dial({
-            action:`/transfer?${new URLSearchParams({})}`
+            action:`/transfer?${params}`,
+            ringTone:'es'
         }, transferTo)
     } else if(aiResponse.includes('code_101')){
         twiml.say({

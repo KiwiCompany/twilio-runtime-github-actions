@@ -125,7 +125,7 @@ exports.getRolDeGuardias = async(zoho_api_key) => {
                         name: x.Owner.name,
                         id: x.Owner.id,
                         email: x.Owner.email,
-                        phone: "+584125295840"
+                        phone: "+58412"
                     },
                     development: {
                         name: x.Desarrollos.name+'... ',

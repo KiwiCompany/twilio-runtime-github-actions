@@ -1,5 +1,5 @@
 const agent_user_data_instructions = 'You can use this JSON to obtain call information like the date of the call, the ID which will be the call_id, the phone number of the caller which will be the caller_number, and other data like the city and state'
-const agent_rol_de_guardias_instructions = 'You can use this JSON to obtain call information about current real state developments and the agents who are in charge of each development'
+const agent_rol_de_guardias_instructions = 'You can use this JSON to obtain call information about current real state developments and the executive salespeople who are in charge of each development'
 const { OpenAI } = require("openai");
 const assistant_id = 'asst_hOyzWztfT0yX30pUkB3LHCYQ'
 
@@ -30,6 +30,18 @@ exports.createNewThread = async(event, openai_api_key, rol_de_guardias) => {
     
 }
 
+exports.addAssistantInstruction = async(input, openai_api_key, thread_id) => {
+    const openai = new OpenAI({ api_key: openai_api_key});
+    const message = await openai.beta.threads.messages.create(
+        thread_id,
+        {
+            role: "assistant",
+            content: input
+        }
+    );
+    return message;
+    
+}
 
 exports.streamRun = async(input, thread_id, openai_api_key) => {
 
