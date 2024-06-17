@@ -1,4 +1,4 @@
-const { streamRun } = require("./core/openai_integration");
+const { streamRun } = require(Runtime.getFunctions()['core/openai_integration']['path']);
 
 exports.handler = async function(context, event, callback) {
    
@@ -8,7 +8,6 @@ exports.handler = async function(context, event, callback) {
 
     let zoho_user_data = { 
         user_firstname: null,
-        user_lastname: null,
         user_business: null,
         user_email: null
     }
