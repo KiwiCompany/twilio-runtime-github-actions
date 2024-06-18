@@ -56,6 +56,26 @@ exports.getUserFromZoho = async(zoho_api_key, id) => {
     
 }
 
+exports.getActiveUsers = async(zoho_api_key, id) => {
+    let config = {
+        method: 'get',
+        maxBodyLength: Infinity,
+        url: `https://www.zohoapis.com/crm/v6/users?type=ActiveUsers`,
+        headers: { 
+          'Authorization': 'Zoho-oauthtoken '+zoho_api_key
+        }
+      };
+
+    try {
+        let response = await axios.request(config)
+        return response.data.users
+    } catch (er) {
+        console.log(er);
+        return null
+    }
+    
+}
+
 exports.getContactFromZoho = async(zoho_api_key, phone_number) => {
 
     let config = {
@@ -71,7 +91,7 @@ exports.getContactFromZoho = async(zoho_api_key, phone_number) => {
         let response = await axios.request(config)
         return response.data.data[0]
     } catch (er) {
-      
+        console.log(er);
         return null
     }
     
@@ -117,27 +137,7 @@ exports.getRolDeGuardias = async(zoho_api_key) => {
 
     try {
         let response = await axios.request(config)
-        let data = []
-        if(response.data.data && Array.isArray(response.data.data) && response.data.data.length > 0){
-            data = response.data.data.map(x => {
-                let newElement = {
-                    agent: {
-                        name: x.Owner.name,
-                        id: x.Owner.id,
-                        email: x.Owner.email,
-                        phone: "+58412"
-                    },
-                    development: {
-                        name: x.Desarrollos.name+'... ',
-                        id: x.Desarrollos
-                    }
-                }
-                return newElement
-            })
-        } else {
-            data = []
-        }
-        return data
+        return response.data.data
     } catch (er) {
         console.log(er);
         return null
@@ -155,10 +155,8 @@ function addZero(str) {
 function getMXDate() {
 
     const dateObj = new Date().toLocaleString('es-MX', { timeZone: 'America/Mexico_City' });
-
     const unformattedDate = dateObj.split(',')[0]; 
-
     const formattedDate = `${addZero(unformattedDate.split('/')[2])}-${addZero(unformattedDate.split('/')[1])}-${addZero(unformattedDate.split('/')[0])}`;
-    
     return formattedDate;
+
 }
