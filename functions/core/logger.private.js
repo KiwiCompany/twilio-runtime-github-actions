@@ -13,7 +13,9 @@ const papertrail = new winston.transports.Syslog({
 const logger = winston.createLogger({
     format: winston.format.simple(),
     levels: winston.config.syslog.levels,
-    transports: [papertrail],
+    transports: [papertrail], 
 });
 
-module.exports=logger
+logger.error('Initializing');
+
+module.exports = logger;
