@@ -1,19 +1,16 @@
-const os = require('os');
-const winston = require('winston');
-require('winston-syslog');
 
-const papertrail = new winston.transports.Syslog({
-    host: "logs6.papertrailapp.com",
-    port: 26779,
-    protocol: 'tls4',
-    localhost: os.hostname(),
-    eol: '\n',
+const bunyan = require('bunyan');
+const syslog = require('bunyan-syslog');
+
+const logger = bunyan.createLogger({
+    name: 'mym-phone-assistant', // Replace with your application name
+    level: 'info', // Set the logging level (info, debug, etc.)
+    stream: syslog.createBunyanStream({
+        host: "logs6.papertrailapp.com",
+        port: 26779,
+        protocol: 'tls4',
+        appname: 'mym-phone-assistant', // Replace with your application name
+    }),
 });
 
-const logger = winston.createLogger({
-    format: winston.format.simple(),
-    levels: winston.config.syslog.levels,
-    transports: [papertrail],
-});
-
-module.exports=logger
+module.exports = logger;

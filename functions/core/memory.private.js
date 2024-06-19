@@ -2,7 +2,7 @@ const NodeCache = require('node-cache');
 
 let cacheInstance; 
 
-class MyCache {
+class Cache {
     constructor() {
         if (!cacheInstance) {
             cacheInstance = new NodeCache();
@@ -23,4 +23,4 @@ class MyCache {
     }
 }
 
-module.exports = new MyCache();
+module.exports = new Cache();

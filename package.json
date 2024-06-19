@@ -14,9 +14,9 @@
   },
   "dependencies": {
     "axios": "^1.7.2",
+    "bunyan": "^1.8.15",
+    "bunyan-syslog": "^0.3.4",
     "node-cache": "^5.1.2",
-    "openai": "^4.48.2",
-    "winston": "^3.13.0",
-    "winston-syslog": "^2.7.0"
+    "openai": "^4.48.2"
   }
 }
