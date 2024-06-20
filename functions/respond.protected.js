@@ -1,6 +1,7 @@
 const { streamRun } = require(Runtime.getFunctions()['core/openai_integration']['path']);
 const { _THREAD_ID } = require(Runtime.getFunctions()['helpers/constants']['path']);
 const MyCache = require(Runtime.getFunctions()['core/memory']['path']);
+const logger = require(Runtime.getFunctions()['core/logger']['path']);
 
 exports.handler = async function(context, event, callback) {
 
@@ -9,6 +10,7 @@ exports.handler = async function(context, event, callback) {
     try {
 
         const thread_id = MyCache.get(_THREAD_ID)
+        const call_data = MyCache.get(_CALL_DATA)
         
         let aiResponse = await streamRun(event.SpeechResult, thread_id,  context.OPENAI_API_KEY, context.AI_ASSISTANT_ID);
         let response = JSON.parse(aiResponse)
@@ -18,8 +20,8 @@ exports.handler = async function(context, event, callback) {
                 twiml.say({
                     voice: context.AI_VOICE
                 }, response.message);
-            
-                console.log("Transfer to: "+response.phone_number);
+
+                logger.info(`Call ${call_data.CallSid}: Attempting transfer to ${response.phone_number}`)
                 const transferTo = '+584125295840';
             
                 twiml.dial({

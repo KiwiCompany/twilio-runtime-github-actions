@@ -16,6 +16,6 @@ const logger = winston.createLogger({
     transports: [papertrail], 
 });
 
-logger.error('Initializing');
+logger.info('New call received',);
 
 module.exports = logger;

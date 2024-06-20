@@ -4,23 +4,15 @@ const logger = require(Runtime.getFunctions()['core/logger']['path']);
 const { tech_error } = require(Runtime.getFunctions()['helpers/ai_errors']['path']);
 
 
-exports.createNewThread = async(event, openai_api_key, rol_de_guardias) => {
+exports.createNewThread = async(call_data, openai_api_key, rol_de_guardias) => {
 
     try {
         const openai = new OpenAI({ api_key: openai_api_key});
-        const data = {
-            caller_country: event.CallerCountry,
-            caller_state: event.CallerState,
-            caller_city: event.CallerCity,
-            call_id: event.CallSid,
-            caller_number: event.Caller,
-            date: new Date().toDateString()
-        }
         let thread = await openai.beta.threads.create({
             messages: [
                 {
                     "role": "assistant",
-                    "content": `${JSON.stringify(data)}. ${agent_user_data_instructions}`
+                    "content": `${JSON.stringify(call_data)}. ${agent_user_data_instructions}`
                 },
                 {
                     "role": "assistant",
