@@ -2,8 +2,7 @@ const { addAssistantInstruction } = require(Runtime.getFunctions()['core/openai_
 const { busy_instruction, no_answer_instruction, failed_instruction } = require(Runtime.getFunctions()['helpers/ai_instructions']['path']);
 const MyCache = require(Runtime.getFunctions()['core/memory']['path']);
 const logger = require(Runtime.getFunctions()['core/logger']['path']);
-
-const { _THREAD_ID } = require(Runtime.getFunctions()['helpers/constants']['path']);
+const { _THREAD_ID, _CALL_DATA } = require(Runtime.getFunctions()['helpers/constants']['path']);
 
 exports.handler = async function (context, event, callback) {
 
@@ -17,7 +16,7 @@ exports.handler = async function (context, event, callback) {
         switch (event.DialCallStatus) {
             case 'busy':
                 await addAssistantInstruction(busy_instruction, context.OPENAI_API_KEY, thread_id)
-                logger.error(`Call ${call_data.CallSid}: failed transfer to ${response.phone_number} because target was busy`, event)
+                logger.error(`Call ${call_data.call_id}: failed transfer because target was busy`)
                 twiml.redirect({
                     method: 'POST'
                 }, `/respond`)
@@ -25,7 +24,7 @@ exports.handler = async function (context, event, callback) {
 
             case 'no-answer':
                 await addAssistantInstruction(no_answer_instruction, context.OPENAI_API_KEY, thread_id)
-                logger.error(`Call ${call_data.CallSid}: failed transfer to ${response.phone_number} because called party did not pick up`, event)
+                logger.error(`Call ${call_data.call_id}: failed transfer because called party did not pick up`)
                 twiml.redirect({
                     method: 'POST'
                 }, `/respond`)
@@ -33,14 +32,14 @@ exports.handler = async function (context, event, callback) {
 
             case 'failed':
                 await addAssistantInstruction(failed_instruction, context.OPENAI_API_KEY, thread_id)
-                logger.error(`Call ${call_data.CallSid}: failed transfer to ${response.phone_number} because probably non-existent phone number`, event)
+                logger.error(`Call ${call_data.call_id}: failed transfer because probably non-existent phone number`)
                 twiml.redirect({
                     method: 'POST'
                 }, `/respond`)
                 break;
     
             default:
-                logger.error(`Call ${call_data.CallSid}: completed transfer to ${response.phone_number}`, event)
+                logger.error(`Call ${call_data.call_id}: completed transfer`)
                 twiml.hangup()
                 break;
                 
