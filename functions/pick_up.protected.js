@@ -31,11 +31,11 @@ exports.handler = async function (context, event, callback) {
         twiml.redirect({
             method: 'POST'
         }, `/respond`)
-
+     
         return callback(null, twiml);
 
     } catch (er) {
-
+     
         twiml.say({ voice: context.AI_VOICE }, er.message);
         twiml.hangup();
 

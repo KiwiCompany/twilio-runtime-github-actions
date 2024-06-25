@@ -4,11 +4,12 @@ exports.handler = async function (context, event, callback) {
 
     twiml.gather({
         enhanced: "true",
-        speechTimeout: 1,
+        speechTimeout: 1.5,
         language: 'es-MX',
         speechModel: "phone_call",
         input: 'speech',
         action:`/respond`,
+        actionOnEmptyResult: true
     })
 
     return callback(null, twiml);

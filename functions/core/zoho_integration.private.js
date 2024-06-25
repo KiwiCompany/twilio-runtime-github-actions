@@ -15,7 +15,7 @@ exports.getZohoApiKey = async(context) => {
         }
         return response.data.access_token
     } catch (er) {
-        logger.error(`Couldn't generate zoho API key`);
+        logger.error(`Couldn't generate zoho API key`, er);
         throw new Error(tech_error)
     }
 }
@@ -75,7 +75,7 @@ exports.getActiveUsers = async(zoho_api_key, id) => {
         let response = await axios.request(config)
         return response.data.users
     } catch (er) {
-        logger.error(`Couldn't get active users`);
+        logger.error(`Couldn't get active users`, er);
         throw new Error(tech_error)
     }
     
@@ -145,8 +145,9 @@ exports.getRolDeGuardias = async(zoho_api_key) => {
         return response.data.data
     } catch (er) {
         
-        logger.error(`Couldn't get rol de guardias`);
+        logger.error(`Couldn't get rol de guardias`, er);
         throw new Error(tech_error)
+
     }
 }
 
@@ -168,7 +169,7 @@ exports.getAvailableAgents = async(zoho_api_key) => {
 
     } catch (er){
 
-        logger.error(`Couldn't generate list of agents`);
+        logger.error(`Couldn't generate list of agents`, er);
         throw new Error(tech_error)
 
     }

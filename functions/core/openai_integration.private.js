@@ -22,7 +22,7 @@ exports.createNewThread = async(call_data, openai_api_key, rol_de_guardias) => {
         })
         return thread.id;
     } catch (er) {
-        logger.error(`Couldn't generate openai thread`);
+        logger.error(`Couldn't generate openai thread`, er);
         throw new Error(tech_error)
     }
     
@@ -44,7 +44,7 @@ exports.addAssistantInstruction = async(input, openai_api_key, thread_id) => {
 
     } catch (er) {
 
-        logger.error(`Couldn't add instruction to assistant`);
+        logger.error(`Couldn't add instruction to assistant`, er);
         throw new Error(tech_error)
 
     }
@@ -58,7 +58,11 @@ exports.streamRun = async(input, thread_id, openai_api_key, assistant_id) => {
         const openai = new OpenAI({ api_key: openai_api_key});
         const run = openai.beta.threads.runs.stream(thread_id, { 
             assistant_id,
-            ...(input ? { additional_messages: [{ role: "user", content: input }] } : {}),
+            ...(input ? { 
+                additional_messages: [{
+                    role: "user", content: input 
+                }] 
+            } : {}),
         });
 
         let assistant_text = '';
@@ -73,7 +77,7 @@ exports.streamRun = async(input, thread_id, openai_api_key, assistant_id) => {
         }
 
     } catch (er) {
-        logger.error(`Couldn't stream AI response`);
+        logger.error(`Couldn't stream AI response`, er);
         throw new Error(tech_error)
     }
 

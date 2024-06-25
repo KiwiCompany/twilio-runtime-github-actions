@@ -49,7 +49,7 @@ exports.handler = async function (context, event, callback) {
 
     } catch (er) {
     
-        twiml.say({voice: context.AI_VOICE}, er);
+        twiml.say({voice: context.AI_VOICE}, er.message);
         twiml.hangup()
 
         return callback(null, twiml);
