@@ -1,7 +1,7 @@
 const { getZohoApiKey, getAvailableAgents } = require(Runtime.getFunctions()['core/zoho_integration']['path']);
 const { createNewThread } = require(Runtime.getFunctions()['core/openai_integration']['path']);
-const { _ZOHO_API_KEY, _THREAD_ID, _CALL_DATA } = require(Runtime.getFunctions()['helpers/constants']['path']);
-const MyCache = require(Runtime.getFunctions()['core/memory']['path']);
+const { _CALL_KEY } = require(Runtime.getFunctions()['helpers/constants']['path']);
+const cache = require(Runtime.getFunctions()['core/cache']['path']);
 const logger = require(Runtime.getFunctions()['core/logger']['path']);
 
 exports.handler = async function (context, event, callback) {
@@ -18,14 +18,19 @@ exports.handler = async function (context, event, callback) {
             caller_number: event.Caller,
             date: new Date().toDateString()
         }
+        
+        await cache.initialize()
 
         const zoho_api_key = await getZohoApiKey(context)
         const agents = await getAvailableAgents(zoho_api_key)
         const thread_id = await createNewThread(call_data, context.OPENAI_API_KEY, agents); 
 
-        MyCache.set(_THREAD_ID, thread_id)
-        MyCache.set(_ZOHO_API_KEY, zoho_api_key)
-        MyCache.set(_CALL_DATA, call_data)
+        cache.setJson(_CALL_KEY, event.CallSid, {
+            ...call_data,
+            zoho_api_key,
+            thread_id
+        })
+
         logger.info('Call information: ', call_data);
 
         twiml.redirect({
@@ -35,7 +40,7 @@ exports.handler = async function (context, event, callback) {
         return callback(null, twiml);
 
     } catch (er) {
-     
+        console.log(er);
         twiml.say({ voice: context.AI_VOICE }, er.message);
         twiml.hangup();
 

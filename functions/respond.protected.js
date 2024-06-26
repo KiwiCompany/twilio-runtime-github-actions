@@ -1,6 +1,6 @@
 const { streamRun } = require(Runtime.getFunctions()['core/openai_integration']['path']);
-const { _THREAD_ID, _CALL_DATA } = require(Runtime.getFunctions()['helpers/constants']['path']);
-const MyCache = require(Runtime.getFunctions()['core/memory']['path']);
+const { _CALL_KEY, _CONVO_KEY } = require(Runtime.getFunctions()['helpers/constants']['path']);
+const cache = require(Runtime.getFunctions()['core/cache']['path']);
 const logger = require(Runtime.getFunctions()['core/logger']['path']);
 
 exports.handler = async function(context, event, callback) {
@@ -8,21 +8,29 @@ exports.handler = async function(context, event, callback) {
     const twiml = new Twilio.twiml.VoiceResponse();
 
     try {
-        const thread_id = MyCache.get(_THREAD_ID)
-        const call_data = MyCache.get(_CALL_DATA)
+       
+        if(!cache.isInitialized()) await cache.initialize()
+
+        const call_data = await cache.getJson(_CALL_KEY, event.CallSid)
+   
         let input = null
         //In case reply from user isnt expected, IA wont ask again andd willl continue with instructions
 
         if(event.msg){
             input = event.msg
-            //Gather ends wiithout reply, IA will ask again
+            //Gather ends without reply, IA will ask again
         } else if (event.SpeechResult){
             input = event.SpeechResult
             //Gather ended and catched a text, IA will process it
+
+            cache.pushList(_CONVO_KEY, event.CallSid, 'Contact: '+event.SpeechResult)
+            //Save user input in the cache
         }
       
-        let aiResponse = await streamRun(input, thread_id,  context.OPENAI_API_KEY, context.AI_ASSISTANT_ID);
+        let aiResponse = await streamRun(input, call_data.thread_id,  context.OPENAI_API_KEY, context.AI_ASSISTANT_ID);
         let response = JSON.parse(aiResponse)
+
+        cache.pushList(_CONVO_KEY, event.CallSid, 'Melissa: '+response.message)
 
         switch (response.next_action) {
 
