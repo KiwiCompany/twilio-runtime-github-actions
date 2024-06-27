@@ -1,6 +1,7 @@
 const { tech_error } = require(Runtime.getFunctions()['helpers/ai_errors']['path']);
 const logger = require(Runtime.getFunctions()['core/logger']['path']);
 const { createClient } = require("redis");
+const ttl = 24 * 60 * 60
 
 let client;
 
@@ -25,7 +26,7 @@ async function initialize() {
 
 async function setJson(folder, key, value) {
     try {
-        await client.json.set(`${folder}:${key}`, '$', value);
+        await client.json.set(`${folder}:${key}`, '$', value, ttl);
     } catch (e) {
         logger.error('Could not set data to redis: ', e);
         throw new Error(tech_error)
@@ -34,7 +35,7 @@ async function setJson(folder, key, value) {
 
 async function getJson(folder, key) {
     try {
-        const response = await client.json.get(`${folder}:${key}`, '$');
+        const response = await client.json.get(`${folder}:${key}`, '$', ttl);
         return response
     } catch (e) {
         logger.error('Could not get data from redis: ', e);
@@ -44,7 +45,19 @@ async function getJson(folder, key) {
 
 async function pushList(folder, key, value) {
     try {
-        const response = await client.rPush(`${folder}:${key}`, value);
+        const response = await client.rPush(`${folder}:${key}`, value, ttl);
+        return response
+    } catch (e) {
+        console.log(e);
+        logger.error('Could not get data from redis: ', e);
+        throw new Error(tech_error)
+    }
+}
+
+async function getList(folder, key) {
+    try {
+        console.log(`${folder}:${key}`);
+        const response = await client.lRange(`${folder}:${key}`, 0, -1, ttl);
         return response
     } catch (e) {
         console.log(e);
@@ -62,7 +75,8 @@ module.exports = {
     setJson,
     getJson,
     isInitialized,
-    pushList
+    pushList,
+    getList
 }
 
 
