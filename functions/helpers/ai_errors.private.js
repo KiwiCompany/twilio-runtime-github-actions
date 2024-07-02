@@ -1,3 +1,3 @@
 module.exports = {
-    tech_error: 'Hola, gracias por comunicarte con M&M Desarrollos. Actualmente existe un problema tecnico en nuestra plataforma, intente mas tarde.',
+    tech_error: 'Gracias por comunicarte con M&M Desarrollos. Lamentablemente no estamos disponibles por el momento, intente mas tarde. Hasta luego.',
 }

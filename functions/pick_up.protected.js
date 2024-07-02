@@ -24,7 +24,6 @@ exports.handler = async function (context, event, callback) {
         const zoho_api_key = await getZohoApiKey(context)
         const agents = await getAvailableAgents(zoho_api_key)
         const thread_id = await createNewThread(call_data, context.OPENAI_API_KEY, agents); 
-
         cache.setJson(_CALL_KEY, event.CallSid, {
             ...call_data,
             zoho_api_key,

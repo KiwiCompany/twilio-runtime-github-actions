@@ -1,13 +1,20 @@
 const { OpenAI } = require("openai");
-const { agent_user_data_instructions, agent_rol_de_guardias_instructions } = require(Runtime.getFunctions()['helpers/ai_instructions']['path']);
+const { agent_user_data_instructions } = require(Runtime.getFunctions()['helpers/ai_instructions']['path']);
 const logger = require(Runtime.getFunctions()['core/logger']['path']);
 const { tech_error } = require(Runtime.getFunctions()['helpers/ai_errors']['path']);
 
 
 exports.createNewThread = async(call_data, openai_api_key, rol_de_guardias) => {
-
     try {
         const openai = new OpenAI({ api_key: openai_api_key});
+        console.log({
+            "role": "assistant",
+            "content": `${JSON.stringify(call_data)}. ${agent_user_data_instructions}`
+        },
+        {
+            "role": "assistant",
+            "content": rol_de_guardias
+        });
         let thread = await openai.beta.threads.create({
             messages: [
                 {
@@ -16,7 +23,7 @@ exports.createNewThread = async(call_data, openai_api_key, rol_de_guardias) => {
                 },
                 {
                     "role": "assistant",
-                    "content": `${JSON.stringify(rol_de_guardias)}. ${agent_rol_de_guardias_instructions}`
+                    "content": rol_de_guardias
                 }
             ]
         })

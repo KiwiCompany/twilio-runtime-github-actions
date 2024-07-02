@@ -1,4 +1,5 @@
 const { addAssistantInstruction } = require(Runtime.getFunctions()['core/openai_integration']['path']);
+const { createContactInZoho } = require(Runtime.getFunctions()['core/zoho_integration']['path']);
 const { busy_instruction, no_answer_instruction, failed_instruction } = require(Runtime.getFunctions()['helpers/ai_instructions']['path']);
 const cache = require(Runtime.getFunctions()['core/cache']['path']);
 const logger = require(Runtime.getFunctions()['core/logger']['path']);
@@ -13,11 +14,25 @@ exports.handler = async function (context, event, callback) {
         if(!await cache.isInitialized()) await cache.initialize()
 
         const call_data = await cache.getJson(_CALL_KEY, event.CallSid)
-
+      
         switch (event.DialCallStatus) {
+         
+            case 'completed':
+                logger.info(`Call ${call_data.call_id}: completed transfer to ${call_data.caller_number}`)
+                const new_contact = {
+                    "Mobile": call_data.caller_number,
+                    ...(call_data.user_name || call_data.user_lastname && {First_Name: `${call_data.user_name} ${call_data.user_lastname}`}),
+                    "Last_Name": `CONMUTADOR (${call_data.development_name}) - ${call_data.real_state_advisor_name}.`,
+                    "IA_Thread_ID": call_data.thread_id,
+                    "Owner": call_data.real_state_advisor_id
+                }
+                await createContactInZoho(call_data.zoho_api_key, new_contact)
+                twiml.hangup()
+                break;
+
             case 'busy':
                 await addAssistantInstruction(busy_instruction, context.OPENAI_API_KEY, call_data.thread_id)
-                logger.error(`Call ${call_data.call_id}: failed transfer because target was busy`)
+                logger.error(`Call ${call_data.call_id}: failed transfer to ${call_data.caller_number} because target was busy`)
                 twiml.redirect({
                     method: 'POST'
                 }, `/respond`)
@@ -25,7 +40,7 @@ exports.handler = async function (context, event, callback) {
 
             case 'no-answer':
                 await addAssistantInstruction(no_answer_instruction, context.OPENAI_API_KEY, call_data.thread_id)
-                logger.error(`Call ${call_data.call_id}: failed transfer because called party did not pick up`)
+                logger.error(`Call ${call_data.call_id}: failed transfer to ${call_data.caller_number} because called party did not pick up`)
                 twiml.redirect({
                     method: 'POST'
                 }, `/respond`)
@@ -33,23 +48,34 @@ exports.handler = async function (context, event, callback) {
 
             case 'failed':
                 await addAssistantInstruction(failed_instruction, context.OPENAI_API_KEY, call_data.thread_id)
-                logger.error(`Call ${call_data.call_id}: failed transfer because probably non-existent phone number`)
+                logger.error(`Call ${call_data.call_id}: failed transfer to ${call_data.caller_number} because probably non-existent phone number`)
+                twiml.redirect({
+                    method: 'POST'
+                }, `/respond`)
+                break;
+         
+            case 'canceled':
+                await addAssistantInstruction(failed_instruction, context.OPENAI_API_KEY, call_data.thread_id)
+                logger.error(`Call ${call_data.call_id}: failed transfer to ${call_data.caller_number} because called party cancelled call.`)
                 twiml.redirect({
                     method: 'POST'
                 }, `/respond`)
                 break;
     
             default:
-                logger.error(`Call ${call_data.call_id}: completed transfer`)
-                twiml.hangup()
+                await addAssistantInstruction(failed_instruction, context.OPENAI_API_KEY, call_data.thread_id)
+                logger.error(`Call ${call_data.call_id}: failed transfer to ${call_data.caller_number} due to unknown reason`)
+                twiml.redirect({
+                    method: 'POST'
+                }, `/respond`)
                 break;
-                
+             
         }
 
         return callback(null, twiml);
 
     } catch (er) {
-    
+        console.log(er);
         twiml.say({voice: context.AI_VOICE}, er.message);
         twiml.hangup()
 

@@ -103,29 +103,50 @@ exports.getActiveUsers = async(zoho_api_key, id) => {
 // }
 
 
-// exports.createContactInZoho = async(zoho_api_key, new_contact) => {
-//     const contacts = [new_contact];
+exports.createContactInZoho = async(zoho_api_key, data) => {
+    let data = {
+        "data": [data]
+    }
+    let config = {
+        method: 'post',
+        maxBodyLength: Infinity,
+        url: 'https://www.zohoapis.com/crm/v6/Contacts',
+        headers: { 
+          'Authorization': 'Zoho-oauthtoken '+zoho_api_key
+        },
+        data: data
+    };
+    try {
+       
+        let response = await axios.request(config)
+        return response.data.data
+    } catch (er) {
+        logger.error(`Couldn't save new contact`, er);
+        throw new Error(tech_error)
+    }
+ 
+}
 
+// exports.updateContactInZoho = async(zoho_api_key, data, id) => {
+//     let data = {
+//         "data": [data]
+//     }
 //     let config = {
-//         method: 'post',
+//         method: 'put',
 //         maxBodyLength: Infinity,
-//         url: `https://www.zohoapis.com/crm/v6/Contacts`,
+//         url: 'https://www.zohoapis.com/crm/v6/Contacts/'+id,
 //         headers: { 
 //           'Authorization': 'Zoho-oauthtoken '+zoho_api_key
 //         },
-//         data: {
-//             contacts,
-//         }
+//         data: data
 //     };
-
 //     try {
 //         let response = await axios.request(config)
-//         return response
+//         return response.data.data
 //     } catch (er) {
-//         console.log(er);
-//         return null
+//         logger.error(`Couldn't save new contact`, er);
+//         throw new Error(tech_error)
 //     }
-    
 // }
 
 
@@ -155,20 +176,17 @@ exports.getAvailableAgents = async(zoho_api_key) => {
     try {
         
         const [ rol_de_guardias, active_users ] = await Promise.all([ this.getRolDeGuardias(zoho_api_key), this.getActiveUsers(zoho_api_key) ])
-    
+        const list_developments = `- Available developments: ${rol_de_guardias.filter(x => x.Desarrollos).map(x => x.Desarrollos.name+'...').join(' ')}`
+        let all_users_text = `- The staff is made up by: ${active_users.map(x => `${x.full_name}, role: ${x.role.name}, phone number: ${x.mobile}, id: ${x.id}`).join('. ')}`
         return active_users.map(x => {
             let data_from_rol_de_guardia = rol_de_guardias.find(y => x.id === y.Owner.id)
-            let newData = {
-                name: `${x.first_name} ${x.last_name}`,
-                phone: x.mobile,
-                ...(data_from_rol_de_guardia ? {development: data_from_rol_de_guardia.Desarrollos} : {}),
-                role: x.role
-            }
-            return newData
-        })
+            return data_from_rol_de_guardia 
+                ? `- ${x.first_name} ${x.last_name} is responsible for development ${data_from_rol_de_guardia.Desarrollos.name} and the phone number is ${x.mobile}.`
+                : null
+            }).concat(list_developments).filter(e => e).concat(all_users_text).join('\n\n')
 
     } catch (er){
-
+        console.log(er);
         logger.error(`Couldn't generate list of agents`, er);
         throw new Error(tech_error)
 
