@@ -1,11 +1,19 @@
-const { getZohoApiKey, getAvailableAgents } = require(Runtime.getFunctions()['core/zoho_integration']['path']);
-const { createNewThread } = require(Runtime.getFunctions()['core/openai_integration']['path']);
+const { 
+    getZohoApiKey, 
+    getAvailableAgents, 
+    getContactByPhoneNumber, 
+    getUserFromZoho 
+} = require(Runtime.getFunctions()['core/zoho_integration']['path']);
+const { 
+    createNewThread, 
+    addAssistantInstruction 
+} = require(Runtime.getFunctions()['core/openai_integration']['path']);
 const { _CALL_KEY } = require(Runtime.getFunctions()['helpers/constants']['path']);
 const cache = require(Runtime.getFunctions()['core/cache']['path']);
 const logger = require(Runtime.getFunctions()['core/logger']['path']);
 
 exports.handler = async function (context, event, callback) {
-    
+
     const twiml = new Twilio.twiml.VoiceResponse();
 
     try {
@@ -20,51 +28,38 @@ exports.handler = async function (context, event, callback) {
         }
         
         await cache.initialize()
-
+        let thread_id = null
         const zoho_api_key = await getZohoApiKey(context)
-        const agents = await getAvailableAgents(zoho_api_key)
-        const thread_id = await createNewThread(call_data, context.OPENAI_API_KEY, agents); 
+        const contact = await getContactByPhoneNumber(zoho_api_key, '+525590354545')
+
+        if(contact){
+            const agent = await getUserFromZoho(zoho_api_key, contact.Owner.id)
+            console.log(agent);
+            thread_id = contact.IA_Thread_ID
+            let instruction = `You just received a new call, this is not the first call from this customer, the name of the customer is ${contact.Full_Name}, the name of the real estate advisor assigned is ${agent.full_name} and the phone number of the real estate advisor assigned is ${agent.mobile}.`
+            await addAssistantInstruction(instruction, context.OPENAI_API_KEY, thread_id)
+        } else {
+            const agents = await getAvailableAgents(zoho_api_key)
+            thread_id = await createNewThread(call_data, context.OPENAI_API_KEY, agents); 
+        }
+       
         cache.setJson(_CALL_KEY, event.CallSid, {
             ...call_data,
             zoho_api_key,
             thread_id
         })
-
         logger.info('Call information: ', call_data);
-
         twiml.redirect({
             method: 'POST'
         }, `/respond`)
-     
+        console.log(thread_id);
         return callback(null, twiml);
 
     } catch (er) {
-        console.log(er);
+
         twiml.say({ voice: context.AI_VOICE }, er.message);
         twiml.hangup();
-
         return callback(null, twiml);
-
+        
     }
-    
 };
-
-
-    // FOR FUTURE SPRINTS
-
-    // let user_data = await getContactFromZoho(zoho_api_key, '5525033513')
-    // let thread_id = null
-
-    // if(!user_data){
-    //     thread_id = await createNewThread(event, context.OPENAI_API_KEY)
-    //     if(!thread_id) {
-    //         twiml.say({
-    //             voice: 'Polly.Mia-Neural'
-    //         }, error_4002);
-    //         twiml.hangup()
-    //         return callback(null, twiml);
-    //     }
-    // } else {
-    //     let owner = await getUserFromZoho(zoho_api_key, user_data.Owner.id)
-    //     thread_id = user_data.Thread_Id
-    // }

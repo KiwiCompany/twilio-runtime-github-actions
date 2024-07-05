@@ -1,5 +1,7 @@
+const { default: axios } = require("axios");
 const { streamRun } = require(Runtime.getFunctions()['core/openai_integration']['path']);
 const { _CALL_KEY, _CONVO_KEY } = require(Runtime.getFunctions()['helpers/constants']['path']);
+const { createContactInZoho } = require(Runtime.getFunctions()['core/zoho_integration']['path']);
 const cache = require(Runtime.getFunctions()['core/cache']['path']);
 const logger = require(Runtime.getFunctions()['core/logger']['path']);
 
@@ -14,24 +16,22 @@ exports.handler = async function(context, event, callback) {
         const call_data = await cache.getJson(_CALL_KEY, event.CallSid)
    
         let input = null
-        //In case reply from user isnt expected, IA wont ask again andd willl continue with instructions
 
         if(event.msg){
             input = event.msg
-            //Gather ends without reply, IA will ask again
         } else if (event.SpeechResult){
             input = event.SpeechResult
-            //Gather ended and catched a text, IA will process it
-
             cache.pushList(_CONVO_KEY, event.CallSid, 'Contact: '+event.SpeechResult)
-            //Save user input in the cache
         }
       
         let aiResponse = await streamRun(input, call_data.thread_id,  context.OPENAI_API_KEY, context.AI_ASSISTANT_ID);
+        console.log(aiResponse);
         let response = JSON.parse(aiResponse)
 
-        cache.pushList(_CONVO_KEY, event.CallSid, 'Melissa: '+response.message)
+        console.log(aiResponse);
 
+        cache.pushList(_CONVO_KEY, event.CallSid, 'Melissa: '+response.message)
+      
         switch (response.next_action) {
 
             case 'transfer':
@@ -40,15 +40,22 @@ exports.handler = async function(context, event, callback) {
                 }, response.message);
                 logger.info(`Call ${call_data.call_id}: Attempting transfer to ${response.phone_number}`)
                 const transferTo = '+584125295840';
-                
-                cache.setJson(_CALL_KEY, event.CallSid, {
-                    ...call_data,
-                    ...(response.user_name && {user_name: response.user_name}),
-                    ...(response.user_lastname && {user_lastname: response.user_lastname}),
-                    ...(response.development_name && {development_name: response.development_name}),
-                    ...(response.real_state_advisor_name && {real_state_advisor_name: response.real_state_advisor_name}),
-                    ...(response.real_state_advisor_id && {real_state_advisor_id: response.real_state_advisor_id}),
-                })
+                if(response.save_in_crm){
+                    let contact = await createContactInZoho(call_data.zoho_api_key, {
+                        "Mobile": call_data.caller_number,
+                        ...(response.user_name || response.user_lastname && {First_Name: `${response.user_name} ${response.user_lastname}`}),
+                        "Last_Name": `CONMUTADOR (${response.development_name}) - ${response.real_state_advisor_name}.`,
+                        "IA_Thread_ID": call_data.thread_id,
+                        "Owner": response.real_state_advisor_id,
+                        "Desarrollo": response.development_id,
+                        "Tipo_de_Contacto": "Prospecto"
+                    })
+                    cache.setJson(_CALL_KEY, event.CallSid, {
+                        ...call_data,
+                        ...(response.save_in_crm && {save_in_crm: response.save_in_crm}),
+                        contact_id: contact.id
+                    })
+                }
                 twiml.dial({
                     action:`/transfer`,
                     ringTone:'es'

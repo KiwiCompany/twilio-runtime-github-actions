@@ -38,6 +38,7 @@ async function getJson(folder, key) {
         const response = await client.json.get(`${folder}:${key}`, '$', ttl);
         return response
     } catch (e) {
+        console.log(e);
         logger.error('Could not get data from redis: ', e);
         throw new Error(tech_error)
     }

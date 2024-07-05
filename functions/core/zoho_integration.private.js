@@ -41,25 +41,24 @@ exports.getZohoApiKey = async(context) => {
     
 // }
 
-// exports.getUserFromZoho = async(zoho_api_key, id) => {
-//     let config = {
-//         method: 'get',
-//         maxBodyLength: Infinity,
-//         url: `https://www.zohoapis.com/crm/v6/users/${id}`,
-//         headers: { 
-//           'Authorization': 'Zoho-oauthtoken '+zoho_api_key
-//         }
-//       };
-
-//     try {
-//         let response = await axios.request(config)
-//         return response.data.users[0]
-//     } catch (er) {
-//         console.log(er);
-//         return null
-//     }
-    
-// }
+exports.getUserFromZoho = async(zoho_api_key, id) => {
+    let config = {
+        method: 'get',
+        maxBodyLength: Infinity,
+        url: `https://www.zohoapis.com/crm/v6/users/${id}?fields=mobile,full_name`,
+        headers: { 
+          'Authorization': 'Zoho-oauthtoken '+zoho_api_key
+        }
+      };
+    try {
+        let response = await axios.request(config)
+        return response.data.users[0]
+    } catch (er) {
+        console.log(er);
+        return null
+    }
+ 
+}
 
 exports.getActiveUsers = async(zoho_api_key, id) => {
     let config = {
@@ -81,31 +80,27 @@ exports.getActiveUsers = async(zoho_api_key, id) => {
     
 }
 
-// exports.getContactFromZoho = async(zoho_api_key, phone_number) => {
+exports.getContactByPhoneNumber = async(zoho_api_key, phone_number) => {
+    let config = {
+        method: 'get',
+        maxBodyLength: Infinity,
+        url: `https://www.zohoapis.com/crm/v6/Contacts/search?phone=${phone_number}&fields=Owner,Full_Name,IA_Thread_ID`,
+        headers: { 
+            'Authorization': `Zoho-oauthtoken ${zoho_api_key}`, 
+        }
+    };
+    try {
+        let response = await axios.request(config)
+        return response.data.data[0]
+    } catch (er) {
+        console.log(er);
+        return null
+    }
+}
 
-//     let config = {
-//         method: 'get',
-//         maxBodyLength: Infinity,
-//         url: `https://www.zohoapis.com/crm/v6/Contacts/search?phone=${phone_number}&fields=Email,Owner,Mobile,Full_Name,Thread_Id`,
-//         headers: { 
-//             'Authorization': `Zoho-oauthtoken ${zoho_api_key}`, 
-//         }
-//     };
-
-//     try {
-//         let response = await axios.request(config)
-//         return response.data.data[0]
-//     } catch (er) {
-//         console.log(er);
-//         return null
-//     }
-    
-// }
-
-
-exports.createContactInZoho = async(zoho_api_key, data) => {
+exports.createContactInZoho = async(zoho_api_key, new_contact) => {
     let data = {
-        "data": [data]
+        "data": [new_contact]
     }
     let config = {
         method: 'post',
@@ -119,13 +114,83 @@ exports.createContactInZoho = async(zoho_api_key, data) => {
     try {
        
         let response = await axios.request(config)
-        return response.data.data
+        if(response.data && response.data.data && response.data.data[0] && response.data.data[0].code === "SUCCESS"){
+            return response.data.data[0].details
+        } else {
+            throw new Error("Couldn't save new contact")
+        }
+        
     } catch (er) {
         logger.error(`Couldn't save new contact`, er);
         throw new Error(tech_error)
     }
  
 }
+
+exports.saveConvoInDeal = async(zoho_api_key, deal_id, convo) => {
+    let data = {
+        "data": [
+            {
+                "Oportunidad": deal_id,
+                "Convo": convo
+            }
+        ]
+    }
+    let config = {
+        method: 'post',
+        maxBodyLength: Infinity,
+        url: 'https://www.zohoapis.com/crm/v6/Conversaciones_IA',
+        headers: { 
+          'Authorization': 'Zoho-oauthtoken '+zoho_api_key
+        },
+        data: data
+    };
+    try {
+       
+        let response = await axios.request(config)
+        if(response.data && response.data.data && response.data.data[0] && response.data.data[0].code === "SUCCESS"){
+            return true
+        } else {
+            throw new Error("Couldn't save new contact")
+        }
+        
+    } catch (er) {
+        logger.error(`Couldn't save ia conversation`, er);
+        throw new Error(tech_error)
+    }
+}
+
+exports.getDealsOfContact = async(zoho_api_key, contact_id, retryCount = 0) => {
+    let config = {
+        method: 'get',
+        maxBodyLength: Infinity,
+        url: `https://www.zohoapis.com/crm/v6/Contacts/${contact_id}/Deals?fields=id`,
+        headers: { 
+          'Authorization': 'Zoho-oauthtoken '+zoho_api_key
+        }
+    };
+    try {
+        let response = await axios.request(config)
+
+        if (response.status === 204) {
+            if (retryCount >= 10) {
+                throw new Error("Couldn't retrieve deal info")
+            } else {
+              return exports.getDealsOfContact(zoho_api_key, contact_id, retryCount + 1);
+            }
+        } else if(response.data && response.data.data && response.data.data[0]){
+            return response.data.data[0]
+        } else {
+            throw new Error("Couldn't retrieve deal info")
+        }
+        
+    } catch (er) {
+        console.log(er);
+        logger.error(`Couldn't retrieve deal info`, er);
+        throw new Error(tech_error)
+    }
+}
+
 
 // exports.updateContactInZoho = async(zoho_api_key, data, id) => {
 //     let data = {
@@ -177,13 +242,14 @@ exports.getAvailableAgents = async(zoho_api_key) => {
         
         const [ rol_de_guardias, active_users ] = await Promise.all([ this.getRolDeGuardias(zoho_api_key), this.getActiveUsers(zoho_api_key) ])
         const list_developments = `- Available developments: ${rol_de_guardias.filter(x => x.Desarrollos).map(x => x.Desarrollos.name+'...').join(' ')}`
-        let all_users_text = `- The staff is made up by: ${active_users.map(x => `${x.full_name}, role: ${x.role.name}, phone number: ${x.mobile}, id: ${x.id}`).join('. ')}`
+        const developments_info = `- ${rol_de_guardias.filter(x => x.Desarrollos).map(x => x.Desarrollos.name+' ID is '+x.Desarrollos.id+', ').join(' ')}`
+        let all_users_text = `- The staff is made up by: ${active_users.map(x => `${x.full_name}, role: ${x.role.name}, phone number: ${x.mobile}, id: ${x.id}, email: ${x.email}`).join('. ')}`
         return active_users.map(x => {
             let data_from_rol_de_guardia = rol_de_guardias.find(y => x.id === y.Owner.id)
             return data_from_rol_de_guardia 
                 ? `- ${x.first_name} ${x.last_name} is responsible for development ${data_from_rol_de_guardia.Desarrollos.name} and the phone number is ${x.mobile}.`
                 : null
-            }).concat(list_developments).filter(e => e).concat(all_users_text).join('\n\n')
+            }).concat(list_developments).filter(e => e).concat(all_users_text).concat(developments_info).join('\n\n')
 
     } catch (er){
         console.log(er);

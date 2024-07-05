@@ -1,5 +1,5 @@
 const { OpenAI } = require("openai");
-const { agent_user_data_instructions } = require(Runtime.getFunctions()['helpers/ai_instructions']['path']);
+const { agent_user_data_instructions, agent_user_new_call_data_instructions } = require(Runtime.getFunctions()['helpers/ai_instructions']['path']);
 const logger = require(Runtime.getFunctions()['core/logger']['path']);
 const { tech_error } = require(Runtime.getFunctions()['helpers/ai_errors']['path']);
 
@@ -7,14 +7,6 @@ const { tech_error } = require(Runtime.getFunctions()['helpers/ai_errors']['path
 exports.createNewThread = async(call_data, openai_api_key, rol_de_guardias) => {
     try {
         const openai = new OpenAI({ api_key: openai_api_key});
-        console.log({
-            "role": "assistant",
-            "content": `${JSON.stringify(call_data)}. ${agent_user_data_instructions}`
-        },
-        {
-            "role": "assistant",
-            "content": rol_de_guardias
-        });
         let thread = await openai.beta.threads.create({
             messages: [
                 {
@@ -24,6 +16,10 @@ exports.createNewThread = async(call_data, openai_api_key, rol_de_guardias) => {
                 {
                     "role": "assistant",
                     "content": rol_de_guardias
+                },
+                {
+                    "role": "assistant",
+                    "content": "You just received a new call, this is the first call from this customer."
                 }
             ]
         })
@@ -35,8 +31,12 @@ exports.createNewThread = async(call_data, openai_api_key, rol_de_guardias) => {
     
 }
 
+
 exports.addAssistantInstruction = async(input, openai_api_key, thread_id) => {
 
+    console.log(input);
+    console.log(openai_api_key);
+    console.log(thread_id);
     try {
 
         const openai = new OpenAI({ api_key: openai_api_key});
@@ -50,7 +50,7 @@ exports.addAssistantInstruction = async(input, openai_api_key, thread_id) => {
         return message;
 
     } catch (er) {
-
+        console.log(er);
         logger.error(`Couldn't add instruction to assistant`, er);
         throw new Error(tech_error)
 

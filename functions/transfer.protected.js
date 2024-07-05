@@ -1,9 +1,8 @@
 const { addAssistantInstruction } = require(Runtime.getFunctions()['core/openai_integration']['path']);
-const { createContactInZoho } = require(Runtime.getFunctions()['core/zoho_integration']['path']);
 const { busy_instruction, no_answer_instruction, failed_instruction } = require(Runtime.getFunctions()['helpers/ai_instructions']['path']);
 const cache = require(Runtime.getFunctions()['core/cache']['path']);
 const logger = require(Runtime.getFunctions()['core/logger']['path']);
-const { _CALL_KEY } = require(Runtime.getFunctions()['helpers/constants']['path']);
+const { _CALL_KEY, _CONVO_KEY } = require(Runtime.getFunctions()['helpers/constants']['path']);
 
 exports.handler = async function (context, event, callback) {
 
@@ -16,17 +15,9 @@ exports.handler = async function (context, event, callback) {
         const call_data = await cache.getJson(_CALL_KEY, event.CallSid)
       
         switch (event.DialCallStatus) {
-         
+            
             case 'completed':
                 logger.info(`Call ${call_data.call_id}: completed transfer to ${call_data.caller_number}`)
-                const new_contact = {
-                    "Mobile": call_data.caller_number,
-                    ...(call_data.user_name || call_data.user_lastname && {First_Name: `${call_data.user_name} ${call_data.user_lastname}`}),
-                    "Last_Name": `CONMUTADOR (${call_data.development_name}) - ${call_data.real_state_advisor_name}.`,
-                    "IA_Thread_ID": call_data.thread_id,
-                    "Owner": call_data.real_state_advisor_id
-                }
-                await createContactInZoho(call_data.zoho_api_key, new_contact)
                 twiml.hangup()
                 break;
 
