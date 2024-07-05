@@ -25,6 +25,7 @@ exports.handler = async function(context, event, callback) {
 			}
 				
     	} catch (er) {
+			
     	    logger.error(`Couldn't save info into the CRM`, er);
     	    twiml.say({voice: context.AI_VOICE}, er.message);
     	    twiml.hangup()
