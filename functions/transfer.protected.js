@@ -66,7 +66,6 @@ exports.handler = async function (context, event, callback) {
         return callback(null, twiml);
 
     } catch (er) {
-        console.log(er);
         twiml.say({voice: context.AI_VOICE}, er.message);
         twiml.hangup()
 

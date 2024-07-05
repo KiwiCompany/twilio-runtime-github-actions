@@ -34,11 +34,7 @@ exports.createNewThread = async(call_data, openai_api_key, rol_de_guardias) => {
 
 exports.addAssistantInstruction = async(input, openai_api_key, thread_id) => {
 
-    console.log(input);
-    console.log(openai_api_key);
-    console.log(thread_id);
     try {
-
         const openai = new OpenAI({ api_key: openai_api_key});
         const message = await openai.beta.threads.messages.create(
             thread_id,
@@ -50,7 +46,6 @@ exports.addAssistantInstruction = async(input, openai_api_key, thread_id) => {
         return message;
 
     } catch (er) {
-        console.log(er);
         logger.error(`Couldn't add instruction to assistant`, er);
         throw new Error(tech_error)
 

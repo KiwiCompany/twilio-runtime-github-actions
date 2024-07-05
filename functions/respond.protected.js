@@ -25,10 +25,7 @@ exports.handler = async function(context, event, callback) {
         }
       
         let aiResponse = await streamRun(input, call_data.thread_id,  context.OPENAI_API_KEY, context.AI_ASSISTANT_ID);
-        console.log(aiResponse);
         let response = JSON.parse(aiResponse)
-
-        console.log(aiResponse);
 
         cache.pushList(_CONVO_KEY, event.CallSid, 'Melissa: '+response.message)
       
@@ -83,7 +80,6 @@ exports.handler = async function(context, event, callback) {
         return callback(null, twiml);
          
     } catch (er) {
-        console.log(er);
         twiml.say({voice: context.AI_VOICE}, er.message);
         twiml.hangup()
 

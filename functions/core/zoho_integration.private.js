@@ -20,27 +20,6 @@ exports.getZohoApiKey = async(context) => {
     }
 }
 
-// exports.getZohoAvailableAgents = async(zoho_api_key) => {
-
-//     let config = {
-//         method: 'get',
-//         maxBodyLength: Infinity,
-//         url: 'https://www.zohoapis.com/crm/v5/users?type=ActiveUsers',
-//         headers: { 
-//             'Authorization': 'Zoho-oauthtoken '+zoho_api_key
-//         }
-//     };
-
-//     try {
-//         let response = await axios.request(config)
-//         return response.data.users
-//     } catch (er) {
-//         console.log(er);
-//         return null
-//     }
-    
-// }
-
 exports.getUserFromZoho = async(zoho_api_key, id) => {
     let config = {
         method: 'get',
@@ -54,10 +33,9 @@ exports.getUserFromZoho = async(zoho_api_key, id) => {
         let response = await axios.request(config)
         return response.data.users[0]
     } catch (er) {
-        console.log(er);
-        return null
+        logger.error(`Couldn't save new contact`, er);
+        throw new Error(tech_error)
     }
- 
 }
 
 exports.getActiveUsers = async(zoho_api_key, id) => {
@@ -68,7 +46,7 @@ exports.getActiveUsers = async(zoho_api_key, id) => {
         headers: { 
           'Authorization': 'Zoho-oauthtoken '+zoho_api_key
         }
-      };
+    };
 
     try {
         let response = await axios.request(config)
@@ -77,7 +55,6 @@ exports.getActiveUsers = async(zoho_api_key, id) => {
         logger.error(`Couldn't get active users`, er);
         throw new Error(tech_error)
     }
-    
 }
 
 exports.getContactByPhoneNumber = async(zoho_api_key, phone_number) => {
@@ -93,8 +70,8 @@ exports.getContactByPhoneNumber = async(zoho_api_key, phone_number) => {
         let response = await axios.request(config)
         return response.data.data[0]
     } catch (er) {
-        console.log(er);
-        return null
+        logger.error(`Couldn't save new contact`, er);
+        throw new Error(tech_error)
     }
 }
 
@@ -124,7 +101,6 @@ exports.createContactInZoho = async(zoho_api_key, new_contact) => {
         logger.error(`Couldn't save new contact`, er);
         throw new Error(tech_error)
     }
- 
 }
 
 exports.saveConvoInDeal = async(zoho_api_key, deal_id, convo) => {
@@ -146,14 +122,12 @@ exports.saveConvoInDeal = async(zoho_api_key, deal_id, convo) => {
         data: data
     };
     try {
-       
         let response = await axios.request(config)
         if(response.data && response.data.data && response.data.data[0] && response.data.data[0].code === "SUCCESS"){
             return true
         } else {
             throw new Error("Couldn't save new contact")
         }
-        
     } catch (er) {
         logger.error(`Couldn't save ia conversation`, er);
         throw new Error(tech_error)
@@ -183,37 +157,11 @@ exports.getDealsOfContact = async(zoho_api_key, contact_id, retryCount = 0) => {
         } else {
             throw new Error("Couldn't retrieve deal info")
         }
-        
     } catch (er) {
-        console.log(er);
         logger.error(`Couldn't retrieve deal info`, er);
         throw new Error(tech_error)
     }
 }
-
-
-// exports.updateContactInZoho = async(zoho_api_key, data, id) => {
-//     let data = {
-//         "data": [data]
-//     }
-//     let config = {
-//         method: 'put',
-//         maxBodyLength: Infinity,
-//         url: 'https://www.zohoapis.com/crm/v6/Contacts/'+id,
-//         headers: { 
-//           'Authorization': 'Zoho-oauthtoken '+zoho_api_key
-//         },
-//         data: data
-//     };
-//     try {
-//         let response = await axios.request(config)
-//         return response.data.data
-//     } catch (er) {
-//         logger.error(`Couldn't save new contact`, er);
-//         throw new Error(tech_error)
-//     }
-// }
-
 
 exports.getRolDeGuardias = async(zoho_api_key) => {
     const axios = require('axios');
@@ -225,21 +173,17 @@ exports.getRolDeGuardias = async(zoho_api_key) => {
             'Authorization': `Zoho-oauthtoken ${zoho_api_key}`, 
         }
     };
-
     try {
         let response = await axios.request(config)
         return response.data.data
     } catch (er) {
-        
         logger.error(`Couldn't get rol de guardias`, er);
         throw new Error(tech_error)
-
     }
 }
 
 exports.getAvailableAgents = async(zoho_api_key) => {
     try {
-        
         const [ rol_de_guardias, active_users ] = await Promise.all([ this.getRolDeGuardias(zoho_api_key), this.getActiveUsers(zoho_api_key) ])
         const list_developments = `- Available developments: ${rol_de_guardias.filter(x => x.Desarrollos).map(x => x.Desarrollos.name+'...').join(' ')}`
         const developments_info = `- ${rol_de_guardias.filter(x => x.Desarrollos).map(x => x.Desarrollos.name+' ID is '+x.Desarrollos.id+', ').join(' ')}`
@@ -249,13 +193,10 @@ exports.getAvailableAgents = async(zoho_api_key) => {
             return data_from_rol_de_guardia 
                 ? `- ${x.first_name} ${x.last_name} is responsible for development ${data_from_rol_de_guardia.Desarrollos.name} and the phone number is ${x.mobile}.`
                 : null
-            }).concat(list_developments).filter(e => e).concat(all_users_text).concat(developments_info).join('\n\n')
-
+        }).concat(list_developments).filter(e => e).concat(all_users_text).concat(developments_info).join('\n\n')
     } catch (er){
-        console.log(er);
         logger.error(`Couldn't generate list of agents`, er);
         throw new Error(tech_error)
-
     }
 } 
 

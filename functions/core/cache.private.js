@@ -38,7 +38,6 @@ async function getJson(folder, key) {
         const response = await client.json.get(`${folder}:${key}`, '$', ttl);
         return response
     } catch (e) {
-        console.log(e);
         logger.error('Could not get data from redis: ', e);
         throw new Error(tech_error)
     }
@@ -49,7 +48,6 @@ async function pushList(folder, key, value) {
         const response = await client.rPush(`${folder}:${key}`, value, ttl);
         return response
     } catch (e) {
-        console.log(e);
         logger.error('Could not get data from redis: ', e);
         throw new Error(tech_error)
     }
@@ -57,11 +55,9 @@ async function pushList(folder, key, value) {
 
 async function getList(folder, key) {
     try {
-        console.log(`${folder}:${key}`);
         const response = await client.lRange(`${folder}:${key}`, 0, -1, ttl);
         return response
     } catch (e) {
-        console.log(e);
         logger.error('Could not get data from redis: ', e);
         throw new Error(tech_error)
     }

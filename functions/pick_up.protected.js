@@ -34,7 +34,6 @@ exports.handler = async function (context, event, callback) {
 
         if(contact){
             const agent = await getUserFromZoho(zoho_api_key, contact.Owner.id)
-            console.log(agent);
             thread_id = contact.IA_Thread_ID
             let instruction = `You just received a new call, this is not the first call from this customer, the name of the customer is ${contact.Full_Name}, the name of the real estate advisor assigned is ${agent.full_name} and the phone number of the real estate advisor assigned is ${agent.mobile}.`
             await addAssistantInstruction(instruction, context.OPENAI_API_KEY, thread_id)
@@ -52,7 +51,6 @@ exports.handler = async function (context, event, callback) {
         twiml.redirect({
             method: 'POST'
         }, `/respond`)
-        console.log(thread_id);
         return callback(null, twiml);
 
     } catch (er) {
